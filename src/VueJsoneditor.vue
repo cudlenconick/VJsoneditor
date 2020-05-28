@@ -6,8 +6,8 @@
 </template>
 
 <script>
-import JSONEditor from "jsoneditor/dist/jsoneditor.min.js"
-import 'jsoneditor/dist/jsoneditor.min.css'
+import JSONEditor from "jsoneditor/dist/jsoneditor.min.js";
+import "jsoneditor/dist/jsoneditor.min.css";
 export default {
   name: "v-jsoneditor",
   data() {
@@ -16,13 +16,13 @@ export default {
       style: {},
       max: false,
       internalChange: false
-    }
+    };
   },
   props: {
     options: {
       type: Object,
       default: () => {
-        return {}
+        return {};
       }
     },
     value: [Object, Array, Number, String, Boolean],
@@ -32,82 +32,100 @@ export default {
     plus: {
       type: Boolean,
       default: true
+    },
+    expanded: {
+      type: Boolean,
+      default: true
     }
   },
   methods: {
     onChange() {
-      let error = null
-      let json = {}
+      let error = null;
+      let json = {};
       try {
-        json = this.editor.get()
+        json = this.editor.get();
       } catch (err) {
-        error = err
+        error = err;
       }
       if (error) {
-        this.$emit("error", error)
+        this.$emit("error", error);
       } else {
         if (this.editor) {
-          this.internalChange = true
-          this.$emit("input", json)
+          this.internalChange = true;
+          this.$emit("input", json);
           this.$nextTick(() => {
-            this.internalChange = false
-          })
+            this.internalChange = false;
+          });
         }
       }
-      this.options.onChange && this.options.onChange(...arguments)
+      this.options.onChange && this.options.onChange(...arguments);
     },
     initView() {
       if (!this.editor) {
-        var container = this.$refs.jsoneditor
-        let cacheChange = this.options.onChange
-        delete this.options.onChange
+        var container = this.$refs.jsoneditor;
+        let cacheChange = this.options.onChange;
+        delete this.options.onChange;
         const options = Object.assign(this.options, {
           onChange: this.onChange
-        })
-        this.editor = new JSONEditor(container, options)
-        this.options.onChange = cacheChange
+        });
+        this.editor = new JSONEditor(container, options);
+        this.options.onChange = cacheChange;
       }
-      this.editor.set(this.value || {})
+      this.editor.set(this.value || {});
+      if (this.expanded) {
+        this.editor.expandAll();
+      }
     },
     destroyView() {
       if (this.editor) {
-        this.editor.destroy()
-        this.editor = null
+        this.editor.destroy();
+        this.editor = null;
       }
     }
   },
   watch: {
+    expanded: {
+      handler(value) {
+        if (this.editor && value && !this.internalChange) {
+          if (value) {
+            this.editor.expandAll();
+          } else {
+            this.editor.collapseAll();
+          }
+        }
+      }
+    },
     value: {
       handler(value) {
         if (this.editor && value && !this.internalChange) {
-          this.editor.set(value)
+          this.editor.set(value);
         }
       },
       deep: true
     },
     max(value) {
       this.$nextTick(() => {
-        this.initView()
-      })
+        this.initView();
+      });
     }
   },
   mounted() {
-    this.initView()
+    this.initView();
   },
   beforeDestroy() {
-    this.destroyView()
+    this.destroyView();
   },
   computed: {
     getHeight() {
       if (this.height && !this.max) {
         return {
           height: this.height
-        }
+        };
       }
-      return {}
+      return {};
     }
   }
-}
+};
 </script>
 
 <style lang="css" scoped>
